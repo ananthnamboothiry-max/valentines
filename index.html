@@ -173,7 +173,7 @@ button:hover{
     opacity:.35;
     animation:drift var(--dur,20s) linear infinite;
     pointer-events:none;
-    z-index:1;
+    z-index:10001;
 }
 
 .heart{
@@ -312,10 +312,42 @@ canvas{
         opacity:0.6;
     }
 }
+
+#mobileBlock{
+    position:fixed;
+    inset:0;
+    background:linear-gradient(#eaf9ff,#dff4ff);
+    opacity:1;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    z-index:9999;
+}
+
+.mobileMessage{
+    font-family:'Press Start 2P';
+    color:#3b6d94;
+    display:flex;
+    flex-direction:column;
+    gap:24px;
+    padding:40px;
+}
+
+.mobileMessage p{
+    font-family:'Quicksand';
+    font-size:18px;
+}
 </style>
 </head>
 
 <body>
+
+<div id="mobileBlock">
+    <div class="mobileMessage">
+        <h1>💙 🌹 💙<br><br><br><br><br>do NOT open this website on your computer.<br><br><br><br><br>💙 🌹 💙</h1>
+    </div>
+</div>
 
 <!-- initial page photos -->
 <div class="scattered initialScatter" aria-hidden="true">
@@ -359,6 +391,15 @@ canvas{
 </div>
 
 <script>
+const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+if(isMobile){
+    document.addEventListener("DOMContentLoaded", ()=>{
+        document.getElementById("mobileBlock").style.display="flex";
+        document.body.style.overflow="hidden";
+    });
+}
+
+if(!isMobile){
 /* elements */
 const yesBtn = document.getElementById("yesBtn");
 const noBtn = document.getElementById("noBtn");
@@ -493,6 +534,7 @@ function checkHeart(){
 
 verifyBtn.addEventListener("click", checkHeart);
 
+}
 /* subtle falling hearts + roses, with immediate start */
 const emojis = ["💙","🌹","💙","🌹","💙"];
 
