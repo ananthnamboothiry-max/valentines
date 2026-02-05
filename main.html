@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>A Small Question</title>
+
+<!-- Aesthetic fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Quicksand:wght@300;500&display=swap" rel="stylesheet">
+
+<style>
+
+:root{
+    --sky:#dff4ff;
+    --blue:#9edcff;
+    --dark:#5c9dcf;
+    --text:#2c3e50;
+}
+
+body{
+    margin:0;
+    background:linear-gradient(#eaf9ff,#dff4ff);
+    font-family:'Quicksand',sans-serif;
+    text-align:center;
+    height:100vh;
+    overflow:hidden;
+    color:var(--text);
+    position: relative;
+}
+
+/* floating pixels background */
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background-image:
+        radial-gradient(#ffffffaa 2px,transparent 2px),
+        radial-gradient(#bde7ff 1px,transparent 1px);
+    background-size:60px 60px,30px 30px;
+    animation:float 60s linear infinite;
+    opacity:.6;
+    pointer-events: none;
+    z-index: 0;
+}
+
+@keyframes float{
+    from{background-position:0 0,0 0}
+    to{background-position:1000px 600px,-800px 400px}
+}
+
+.container{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    gap:18px;
+    position: relative;
+    z-index: 2;
+}
+
+.actions{
+    display:flex;
+    gap:24px;
+    justify-content:center;
+    align-items:center;
+}
+
+/* pixel title */
+h1{
+    font-family:'Press Start 2P',cursive;
+    font-size:18px;
+    line-height:1.8em;
+    color:#3b6d94;
+}
+
+/* buttons */
+button{
+    font-family:'Press Start 2P';
+    padding:14px 28px;
+    margin:18px;
+    border:4px solid #3b6d94;
+    background:#bde7ff;
+    color:#24506f;
+    cursor:pointer;
+    box-shadow:6px 6px 0 #3b6d94;
+    transition:.15s;
+}
+
+button:hover{
+    transform:translate(2px,2px);
+    box-shadow:4px 4px 0 #3b6d94;
+}
+
+#noBtn{ position:relative; }
+
+/* pixel roses */
+.rose{
+    position:absolute;
+    font-size:28px;
+    opacity:.85;
+    animation:drift 12s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+}
+
+@keyframes drift{
+    from{transform:translateY(-20px)}
+    to{transform:translateY(110vh)}
+}
+
+/* drawing area */
+#drawArea{
+    display:none;
+    margin-top:30px;
+}
+
+canvas{
+    background:white;
+    border:6px solid #3b6d94;
+    box-shadow:10px 10px 0 #3b6d94;
+}
+
+#result{
+    font-family:'Press Start 2P';
+    margin-top:25px;
+    font-size:14px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1 id="title">
+        thalia...<br><br>
+        will you be my valentine?
+    </h1>
+
+    <div class="actions">
+        <button id="yesBtn">YES</button>
+        <button id="noBtn">NO</button>
+    </div>
+
+    <div id="drawArea">
+        <h1>human verification required</h1>
+        <p>please draw a heart to continue</p>
+        <canvas id="canvas" width="380" height="380"></canvas><br>
+        <button onclick="checkHeart()">VERIFY</button>
+        <div id="result"></div>
+    </div>
+</div>
+
+<script>
+
+/* get elements properly */
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const drawArea = document.getElementById("drawArea");
+const title = document.getElementById("title");
+
+/* runaway NO button */
+noBtn.onmouseover = () => {
+    noBtn.style.position = "absolute";
+    noBtn.style.left = Math.random()*(window.innerWidth-120)+"px";
+    noBtn.style.top = Math.random()*(window.innerHeight-80)+"px";
+};
+
+/* YES pressed (FIXED) */
+yesBtn.onclick = () => {
+    title.innerText = "security checkpoint";
+    yesBtn.style.display="none";
+    noBtn.style.display="none";
+    drawArea.style.display="block";
+};
+
+/* floating pixel roses */
+setInterval(()=>{
+    const r=document.createElement("div");
+    r.className="rose";
+    r.innerText="🌹";
+    r.style.left=Math.random()*100+"vw";
+    r.style.animationDuration=(8+Math.random()*6)+"s";
+    document.body.appendChild(r);
+    setTimeout(()=>r.remove(),15000);
+},900);
+
+/* drawing logic (now works on phone too) */
+const canvas=document.getElementById("canvas");
+const ctx=canvas.getContext("2d");
+let drawing=false,points=[];
+
+function getPos(e){
+    const rect=canvas.getBoundingClientRect();
+    return {
+        x:(e.touches?e.touches[0].clientX:e.clientX)-rect.left,
+        y:(e.touches?e.touches[0].clientY:e.clientY)-rect.top
+    };
+}
+
+function start(e){
+    drawing=true;
+    points=[];
+    const p=getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y);
+}
+
+function move(e){
+    if(!drawing) return;
+    const p=getPos(e);
+    ctx.lineTo(p.x,p.y);
+    ctx.strokeStyle="#ff4d88";
+    ctx.lineWidth=4;
+    ctx.stroke();
+    points.push([p.x,p.y]);
+}
+
+function end(){ drawing=false; }
+
+canvas.addEventListener("mousedown",start);
+canvas.addEventListener("mousemove",move);
+canvas.addEventListener("mouseup",end);
+
+canvas.addEventListener("touchstart",start);
+canvas.addEventListener("touchmove",e=>{move(e);e.preventDefault();});
+canvas.addEventListener("touchend",end);
+
+/* heart detection */
+function checkHeart(){
+    if(points.length<80){fail();return;}
+
+    let minY=999,maxY=0,minX=999,maxX=0;
+    points.forEach(p=>{
+        minX=Math.min(minX,p[0]);
+        maxX=Math.max(maxX,p[0]);
+        minY=Math.min(minY,p[1]);
+        maxY=Math.max(maxY,p[1]);
+    });
+
+    let ratio=(maxY-minY)/(maxX-minX);
+    let lowest=points.reduce((a,b)=>a[1]>b[1]?a:b);
+    let above=points.filter(p=>p[1]<lowest[1]-(maxY-minY)*0.3).length;
+
+    if(ratio>0.8&&ratio<1.6&&above>40) success();
+    else fail();
+}
+
+function success(){
+    document.body.innerHTML=`
+        <div style="margin-top:120px;font-family:'Press Start 2P';color:#3b6d94">
+            <h1>verification complete</h1>
+            <h1>you are my valentine 💙</h1>
+            <p style="font-family:Quicksand;margin-top:40px;font-size:18px">
+            i really really like you
+            </p>
+        </div>
+    `;
+}
+
+function fail(){
+    document.getElementById("result").innerText="that does not appear to be a heart";
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    points=[];
+}
+
+</script>
+</body>
+</html>
