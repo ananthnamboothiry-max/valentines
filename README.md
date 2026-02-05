@@ -1,2 +1,2 @@
-# valentines
-A valentine's day webapp for my girlfriend
+# Valentine's Web App
+A custom webapp built to ask my girlfriend to be my valentine.
